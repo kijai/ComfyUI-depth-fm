@@ -2,7 +2,7 @@ import os
 import torch
 from .depthfm import DepthFM
 import folder_paths
-import utils
+import comfy.utils
 import model_management
 from contextlib import nullcontext
 
@@ -60,7 +60,7 @@ class Depth_fm:
         images = images * 2.0 - 1.0
         images = images.to(device)
 
-        pbar = utils.ProgressBar(images.shape[0])
+        pbar = comfy.utils.ProgressBar(images.shape[0])
 
         autocast_condition = not model_management.is_device_mps(device)
         with torch.autocast(model_management.get_autocast_device(device), dtype=dtype) if autocast_condition else nullcontext():
@@ -68,11 +68,12 @@ class Depth_fm:
             for start_idx in range(0, images.shape[0], per_batch):
                 sub_images = self.model.predict_depth(images[start_idx:start_idx+per_batch], num_steps=steps, ensemble_size=ensemble_size)
                 depth_list.append(sub_images.cpu())
+                print(sub_images.shape[0])
                 batch_count = sub_images.shape[0]        
                 pbar.update(batch_count)
         
         depth = torch.cat(depth_list, dim=0)
-        print(depth.min(), depth.max())
+        #print(depth.min(), depth.max())
         depth = depth.repeat(1, 3, 1, 1).permute(0, 2, 3, 1).cpu()
         if invert:
             depth = 1.0 - depth
