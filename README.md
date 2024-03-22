@@ -1,3 +1,8 @@
+# ComfyUI node to use depth-fm monocular depth estimation model
+![image](https://github.com/kijai/ComfyUI-depth-fm/assets/40791699/9885ffc3-394d-4f8a-8d43-041923302550)
+
+
+
 <p align="center">
  <!-- <h2 align="center">📻 DepthFM: Fast Monocular Depth Estimation with Flow Matching</h2> -->
  <h2 align="center"><img src=assets/figures/radio.png width=28> DepthFM: Fast Monocular Depth Estimation with Flow Matching</h2>
@@ -13,8 +18,9 @@
 </p>
 
  </p>
- 
- 
+
+# Original repository:
+
 [![Website](assets/figures/badge-website.svg)](https://depthfm.github.io)
 [![Paper](https://img.shields.io/badge/arXiv-PDF-b31b1b)](https://arxiv.org/abs/2403.13788)
 
