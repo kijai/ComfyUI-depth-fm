@@ -102,5 +102,5 @@ NODE_CLASS_MAPPINGS = {
     "Depth_fm": Depth_fm,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "Depth_fm": "Depth_fm",
+    "Depth_fm": "Depth-FM",
 }
