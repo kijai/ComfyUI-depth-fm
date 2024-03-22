@@ -15,10 +15,11 @@ def exists(val):
 
 
 class DepthFM(nn.Module):
-    def __init__(self, ckpt_path: str):
+    def __init__(self, vae, ckpt_path: str):
         super().__init__()
-        vae_id = "runwayml/stable-diffusion-v1-5"
-        self.vae = AutoencoderKL.from_pretrained(vae_id, subfolder="vae")
+        #vae_id = "runwayml/stable-diffusion-v1-5"
+        #self.vae = AutoencoderKL.from_pretrained(vae_id, subfolder="vae")
+        self.vae = vae
         self.scale_factor = 0.18215
 
         # set with checkpoint
@@ -98,11 +99,12 @@ class DepthFM(nn.Module):
     
     @torch.no_grad()
     def encode(self, x: Tensor, sample_posterior: bool = True):
-        posterior = self.vae.encode(x)
-        if sample_posterior:
-            z = posterior.latent_dist.sample()
-        else:
-            z = posterior.latent_dist.mode()
+        self.vae.first_stage_model = self.vae.first_stage_model.to(x.device)
+        z = self.vae.first_stage_model.encode(x)
+        # if sample_posterior:
+        #     z = posterior.latent_dist.sample()
+        # else:
+        #     z = posterior.latent_dist.mode()
         # normalize latent code
         z = z * self.scale_factor
         return z
@@ -110,7 +112,7 @@ class DepthFM(nn.Module):
     @torch.no_grad()
     def decode(self, z: Tensor):
         z = 1.0 / self.scale_factor * z
-        return self.vae.decode(z).sample
+        return self.vae.first_stage_model.decode(z)
 
 
 def sigmoid(x):

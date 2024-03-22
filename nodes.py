@@ -21,6 +21,7 @@ class Depth_fm:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {
+            "vae": ("VAE",),
             "depthfm_model": (folder_paths.get_filename_list("checkpoints"),),
             "images": ("IMAGE",),
             "steps": ("INT", {"default": 4, "min": 1, "max": 200, "step": 1}),
@@ -43,10 +44,10 @@ class Depth_fm:
     FUNCTION = "process"
     CATEGORY = "depth_fm"
 
-    def process(self, depthfm_model, images, ensemble_size, steps, dtype, invert, per_batch):
+    def process(self, depthfm_model, vae, images, ensemble_size, steps, dtype, invert, per_batch):
         device = model_management.get_torch_device()
         dtype = convert_dtype(dtype)
-
+        
         custom_config = {
             "model_path": depthfm_model,
             "dtype": dtype,
@@ -54,7 +55,7 @@ class Depth_fm:
         if not hasattr(self, "model") or custom_config != self.current_config:
             self.current_config = custom_config
             DEPTHFM_MODEL_PATH = folder_paths.get_full_path("checkpoints", depthfm_model)
-            self.model = DepthFM(DEPTHFM_MODEL_PATH)
+            self.model = DepthFM(vae, DEPTHFM_MODEL_PATH)
             self.model.eval().to(dtype).to(device)
 
         images = images.permute(0, 3, 1, 2)
@@ -79,12 +80,10 @@ class Depth_fm:
             for start_idx in range(0, images.shape[0], per_batch):
                 sub_images = self.model.predict_depth(images[start_idx:start_idx+per_batch], num_steps=steps, ensemble_size=ensemble_size)
                 depth_list.append(sub_images.cpu())
-                print(sub_images.shape[0])
                 batch_count = sub_images.shape[0]        
                 pbar.update(batch_count)
         
         depth = torch.cat(depth_list, dim=0)
-        #print(depth.min(), depth.max())
         depth = depth.repeat(1, 3, 1, 1).permute(0, 2, 3, 1).cpu()
 
         final_H = (orig_H // 2) * 2
@@ -95,7 +94,8 @@ class Depth_fm:
           
         if invert:
             depth = 1.0 - depth
-
+       
+        depth = torch.clamp(depth, 0.0, 1.0)
         return (depth,)
     
 NODE_CLASS_MAPPINGS = {

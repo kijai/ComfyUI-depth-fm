@@ -1,7 +1,4 @@
 numpy
 einops
 omegaconf
-matplotlib
-accelerate>=0.22.0
-diffusers>=0.20.1
 torchdiffeq>=0.2.3
