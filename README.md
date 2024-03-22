@@ -13,6 +13,8 @@ or if you use portable (run this in ComfyUI_windows_portable -folder):
 The model from https://ommer-lab.com/files/depthfm/depthfm-v1.ckpt goes into:
 `ComfyUI/models/checkpoints`
 
+# Original repository:
+
 <p align="center">
  <!-- <h2 align="center">📻 DepthFM: Fast Monocular Depth Estimation with Flow Matching</h2> -->
  <h2 align="center"><img src=assets/figures/radio.png width=28> DepthFM: Fast Monocular Depth Estimation with Flow Matching</h2>
@@ -29,7 +31,6 @@ The model from https://ommer-lab.com/files/depthfm/depthfm-v1.ckpt goes into:
 
  </p>
 
-# Original repository:
 
 [![Website](assets/figures/badge-website.svg)](https://depthfm.github.io)
 [![Paper](https://img.shields.io/badge/arXiv-PDF-b31b1b)](https://arxiv.org/abs/2403.13788)
