@@ -5,7 +5,7 @@ import torch.nn as nn
 from abc import abstractmethod
 import torch.nn.functional as F
 
-from util import (
+from .util import (
     checkpoint,
     conv_nd,
     linear,
@@ -14,7 +14,7 @@ from util import (
     normalization,
     timestep_embedding,
 )
-from attention import SpatialTransformer
+from .attention import SpatialTransformer
 
 
 def exists(x):

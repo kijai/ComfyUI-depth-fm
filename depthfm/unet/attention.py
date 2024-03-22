@@ -6,7 +6,7 @@ from inspect import isfunction
 import torch.nn.functional as F
 from typing import Optional, Any
 
-from util import checkpoint
+from .util import checkpoint
 
 class Conv2d(torch.nn.Conv2d):
     def reset_parameters(self):

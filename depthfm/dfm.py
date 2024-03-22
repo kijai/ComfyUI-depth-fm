@@ -6,9 +6,8 @@ from torch import Tensor
 from functools import partial
 from torchdiffeq import odeint
 
-from unet import UNetModel
-from diffusers import AutoencoderKL
-
+#from unet import UNetModel
+from .unet.openaimodel import UNetModel
 
 def exists(val):
     return val is not None

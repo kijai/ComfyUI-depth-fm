@@ -1,7 +1,7 @@
 import os
 import torch
 import torch.nn.functional as F
-from .depthfm import DepthFM
+from .depthfm.dfm import DepthFM
 import folder_paths
 import comfy.utils
 import model_management
