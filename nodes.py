@@ -1,5 +1,6 @@
 import os
 import torch
+import torch.nn.functional as F
 from .depthfm import DepthFM
 import folder_paths
 import comfy.utils
@@ -22,8 +23,8 @@ class Depth_fm:
         return {"required": {
             "depthfm_model": (folder_paths.get_filename_list("checkpoints"),),
             "images": ("IMAGE",),
-            "steps": ("INT", {"default": 4}),
-            "ensemble_size": ("INT", {"default": 1}),
+            "steps": ("INT", {"default": 4, "min": 1, "max": 200, "step": 1}),
+            "ensemble_size": ("INT", {"default": 1, "min": 1, "max": 200, "step": 1}),
             "dtype": (
                     [
                         'fp32',
@@ -58,6 +59,16 @@ class Depth_fm:
 
         images = images.permute(0, 3, 1, 2)
         images = images * 2.0 - 1.0
+
+        B, C, H, W = images.shape
+        orig_H, orig_W = H, W
+        if W % 64 != 0:
+            W = W - (W % 64)
+        if H % 64 != 0:
+            H = H - (H % 64)
+        if orig_H % 64 != 0 or orig_W % 64 != 0:
+            images = F.interpolate(images, size=(H, W), mode="bicubic")
+            
         images = images.to(device)
 
         pbar = comfy.utils.ProgressBar(images.shape[0])
@@ -75,8 +86,16 @@ class Depth_fm:
         depth = torch.cat(depth_list, dim=0)
         #print(depth.min(), depth.max())
         depth = depth.repeat(1, 3, 1, 1).permute(0, 2, 3, 1).cpu()
+
+        final_H = (orig_H // 2) * 2
+        final_W = (orig_W // 2) * 2
+
+        if depth.shape[1] != final_H or depth.shape[2] != final_W:
+            depth = F.interpolate(depth.permute(0, 3, 1, 2), size=(final_H, final_W), mode="bicubic").permute(0, 2, 3, 1)
+          
         if invert:
             depth = 1.0 - depth
+
         return (depth,)
     
 NODE_CLASS_MAPPINGS = {
