@@ -1,5 +1,5 @@
 # ComfyUI node to use depth-fm monocular depth estimation model
-![image](https://github.com/kijai/ComfyUI-depth-fm/assets/40791699/9885ffc3-394d-4f8a-8d43-041923302550)
+![image](https://github.com/kijai/ComfyUI-depth-fm/assets/40791699/138737cc-7fa2-45bb-bd05-52b599d71393)
 
 # Installing
 Either manager and install from git, or clone this repo to custom_nodes and run:
@@ -12,6 +12,8 @@ or if you use portable (run this in ComfyUI_windows_portable -folder):
 
 The model from https://ommer-lab.com/files/depthfm/depthfm-v1.ckpt goes into:
 `ComfyUI/models/checkpoints`
+
+Any 1.5 VAE should work with the node.
 
 # Original repository:
 
