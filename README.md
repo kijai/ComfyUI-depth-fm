@@ -2,7 +2,7 @@
 ![image](https://github.com/kijai/ComfyUI-depth-fm/assets/40791699/138737cc-7fa2-45bb-bd05-52b599d71393)
 
 # Installing
-Either manager and install from git, or clone this repo to custom_nodes and run:
+Either use the ComfyUI-Manager, or clone this repo to custom_nodes and run:
 
 `pip install -r requirements.txt`
 
@@ -10,10 +10,16 @@ or if you use portable (run this in ComfyUI_windows_portable -folder):
 
 `python_embeded\python.exe -m pip install -r ComfyUI\custom_nodes\ComfyUI-depth-fm\requirements.txt`
 
-The model from https://ommer-lab.com/files/depthfm/depthfm-v1.ckpt goes into:
-`ComfyUI/models/checkpoints`
+Pruned models as safetensors are available in the ComfyUI-Manager, or from here:
 
-Any 1.5 VAE should work with the node.
+https://huggingface.co/Kijai/depth-fm-pruned/tree/main
+
+They go in the `ComfyUI/models/checkpoints`
+
+
+Original model from https://ommer-lab.com/files/depthfm/depthfm-v1.ckpt 
+
+Any SD1.5/2.1 VAE should work with the node.
 
 # Original repository:
 
