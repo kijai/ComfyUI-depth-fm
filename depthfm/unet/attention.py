@@ -7,6 +7,7 @@ import torch.nn.functional as F
 from typing import Optional, Any
 
 from .util import checkpoint
+import model_management
 
 class Conv2d(torch.nn.Conv2d):
     def reset_parameters(self):
@@ -15,14 +16,6 @@ class Conv2d(torch.nn.Conv2d):
 class Linear(torch.nn.Linear):
     def reset_parameters(self):
         return None
-
-try:
-    import xformers
-    import xformers.ops
-    XFORMERS_IS_AVAILBLE = True
-except:
-    print("WARNING: xformers is not available, inference might be slow.")
-    XFORMERS_IS_AVAILBLE = False
 
 # CrossAttn precision handling
 import os
@@ -261,7 +254,7 @@ class BasicTransformerBlock(nn.Module):
         disable_self_attn=False,
     ):
         super().__init__()
-        attn_mode = "softmax-xformers" if XFORMERS_IS_AVAILBLE else "softmax"
+        attn_mode = "softmax-xformers" if model_management.XFORMERS_IS_AVAILABLE else "softmax"
         assert attn_mode in self.ATTENTION_MODES
         attn_cls = self.ATTENTION_MODES[attn_mode]
         self.disable_self_attn = disable_self_attn
