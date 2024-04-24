@@ -9,6 +9,9 @@ from typing import Optional, Any
 from .util import checkpoint
 import model_management
 
+if model_management.XFORMERS_IS_AVAILABLE:
+    import xformers
+
 class Conv2d(torch.nn.Conv2d):
     def reset_parameters(self):
         return None

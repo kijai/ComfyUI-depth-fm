@@ -5,8 +5,16 @@ import torch.nn as nn
 from torch import Tensor
 from functools import partial
 from torchdiffeq import odeint
+from contextlib import nullcontext
 
-#from unet import UNetModel
+try:
+    from accelerate import init_empty_weights
+    from accelerate.utils import set_module_tensor_to_device
+    is_accelerate_available = True
+except:
+    is_accelerate_available = False
+    pass
+
 from .unet.openaimodel import UNetModel
 
 def exists(val):
@@ -14,19 +22,24 @@ def exists(val):
 
 
 class DepthFM(nn.Module):
-    def __init__(self, vae, ckpt_path: str):
+    def __init__(self, vae, ckpt_path: str, device, offload_device,dtype):
         super().__init__()
-        #vae_id = "runwayml/stable-diffusion-v1-5"
-        #self.vae = AutoencoderKL.from_pretrained(vae_id, subfolder="vae")
         self.vae = vae
         self.scale_factor = 0.18215
+        self.device = device
+        self.offload_device = offload_device
 
         # set with checkpoint
-        ckpt = torch.load(ckpt_path, map_location="cpu")
-        self.noising_step = ckpt['noising_step']
-        self.empty_text_embed = ckpt['empty_text_embedding']
-        self.model = UNetModel(**ckpt['ldm_hparams'])
-        self.model.load_state_dict(ckpt['state_dict'])
+        state_dict = torch.load(ckpt_path)
+        self.noising_step = state_dict['noising_step']
+        self.empty_text_embed = state_dict['empty_text_embedding']
+        with (init_empty_weights() if is_accelerate_available else nullcontext()):
+            self.model = UNetModel(**state_dict['ldm_hparams'])
+        if is_accelerate_available:
+            for key in state_dict['state_dict']:
+                set_module_tensor_to_device(self.model, key, device=device, dtype=dtype, value=state_dict['state_dict'][key])
+        else:
+            self.model.load_state_dict(state_dict['state_dict'])
     
     def ode_fn(self, t: Tensor, x: Tensor, **kwargs):
         if t.numel() == 1:
@@ -67,7 +80,9 @@ class DepthFM(nn.Module):
         
         bs, dev = ims.shape[0], ims.device
 
+        self.vae.first_stage_model = self.vae.first_stage_model.to(self.device)
         ims_z = self.encode(ims, sample_posterior=False)
+        self.vae.first_stage_model = self.vae.first_stage_model.to(self.offload_device)
 
         conditioning = torch.tensor(self.empty_text_embed).to(dev).repeat(bs, 1, 1)
         context = ims_z
@@ -78,9 +93,14 @@ class DepthFM(nn.Module):
             x_source = q_sample(x_source, self.noising_step)    
 
         # solve ODE
+        self.model.to(self.device)
         depth_z = self.generate(x_source, num_steps=num_steps, context=context, context_ca=conditioning)
+        self.model.to(self.offload_device)
 
+        self.vae.first_stage_model = self.vae.first_stage_model.to(self.device)
         depth = self.decode(depth_z)
+        self.vae.first_stage_model = self.vae.first_stage_model.to(self.offload_device)
+
         depth = depth.mean(dim=1, keepdim=True)
 
         if ensemble_size > 1:
@@ -98,13 +118,7 @@ class DepthFM(nn.Module):
     
     @torch.no_grad()
     def encode(self, x: Tensor, sample_posterior: bool = True):
-        self.vae.first_stage_model = self.vae.first_stage_model.to(x.device)
-        z = self.vae.first_stage_model.encode(x)
-        # if sample_posterior:
-        #     z = posterior.latent_dist.sample()
-        # else:
-        #     z = posterior.latent_dist.mode()
-        # normalize latent code
+        z = self.vae.first_stage_model.encode(x)        
         z = z * self.scale_factor
         return z
     

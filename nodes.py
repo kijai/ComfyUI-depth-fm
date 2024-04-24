@@ -1,4 +1,3 @@
-import os
 import torch
 import torch.nn.functional as F
 from .depthfm.dfm import DepthFM
@@ -46,6 +45,7 @@ class Depth_fm:
 
     def process(self, depthfm_model, vae, images, ensemble_size, steps, dtype, invert, per_batch):
         device = model_management.get_torch_device()
+        offload_device = model_management.unet_offload_device()
         dtype = convert_dtype(dtype)
         
         custom_config = {
@@ -55,7 +55,7 @@ class Depth_fm:
         if not hasattr(self, "model") or custom_config != self.current_config:
             self.current_config = custom_config
             DEPTHFM_MODEL_PATH = folder_paths.get_full_path("checkpoints", depthfm_model)
-            self.model = DepthFM(vae, DEPTHFM_MODEL_PATH)
+            self.model = DepthFM(vae, DEPTHFM_MODEL_PATH, device, offload_device, dtype)
             self.model.eval().to(dtype).to(device)
 
         images = images.permute(0, 3, 1, 2)
