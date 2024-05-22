@@ -1,0 +1,15 @@
+[project]
+name = "comfyui-depth-fm"
+description = "Fast and accurate monocular depth estimation."
+version = "1.0.0"
+license = "LICENSE"
+dependencies = ["numpy", "einops", "omegaconf", "torchdiffeq>=0.2.3"]
+
+[project.urls]
+Repository = "https://github.com/kijai/ComfyUI-depth-fm"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-depth-fm"
+Icon = ""
